@@ -1,5 +1,6 @@
 package auth.server.Controller;
 
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import auth.server.Dto.UserCreateDto;
@@ -17,6 +18,9 @@ public class UserController {
 
   @Autowired
   private UserRepository userRepository;
+
+  @Autowired
+  private KafkaTemplate<String, String> kafkaTemplate;
 
   @PostMapping()
   public ResponseEntity<String> createUser(@RequestBody UserCreateDto user) {
@@ -65,6 +69,9 @@ public class UserController {
       } else {
         fetchedUser.setTotalFails(fetchedUser.getTotalFails() + 1);
         userRepository.save(fetchedUser);
+
+        kafkaTemplate.send("logins-invalidos", user.getUsername());
+
         return new ResponseEntity<String>("Usuário com falha no login", HttpStatus.BAD_REQUEST);
 
       }

@@ -7,4 +7,11 @@ CREATE TABLE tab_user (
   totalFails INT DEFAULT 0 NOT NULL,
   isBlocked BOOLEAN DEFAULT FALSE NOT NULL
 );
+
+DROP TABLE IF EXISTS tab_history;
+CREATE TABLE tab_history (
+  historyId INT AUTO_INCREMENT PRIMARY KEY,
+  username VARCHAR(30) NOT NULL,
+  date DATE NOT NULL,
+);
 COMMIT;
