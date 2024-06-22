@@ -1,20 +1,15 @@
 package auth.server.Controller;
 
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import auth.server.Dto.UserCreateDto;
 import auth.server.Dto.UserChangePasswordDto;
 import auth.server.Entity.User;
 import auth.server.Repository.UserRepository;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/user")
@@ -74,6 +69,22 @@ public class UserController {
 
       }
     }
+  }
+
+  @PutMapping("/unlock/{username}")
+  @PreAuthorize("hasRole('ADMIN')")
+  public ResponseEntity<String> unlock(@PathVariable String username) {
+    User user = userRepository.findByUsername(username);
+    if (user == null)
+      return new ResponseEntity<String>("Usuário não existe", HttpStatus.NOT_FOUND);
+
+    if (!user.getIsBlocked())
+      return new ResponseEntity<String>("Usuário não está bloqueado", HttpStatus.BAD_REQUEST);
+
+    user.setTotalFails(0);
+    user.setIsBlocked(false);
+    userRepository.save(user);
+    return new ResponseEntity<String>("Usuário desbloqueado", HttpStatus.OK);
   }
 
   @PutMapping("/changePassword")
